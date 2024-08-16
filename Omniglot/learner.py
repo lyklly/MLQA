@@ -161,11 +161,18 @@ class Conv_Standard(nn.Module):
 
         return clone_data
 
-   def augmentation(self, x1s, y1s, x2s, y2s, lam_mix = 0, da_pool = []):
+    def augmentation(self, x1s, y1s, x2s, y2s, lam_mix = 0):
         if lam_mix == 0:
             lam_mix = self.dist.sample().to(x1s.device)
-        if len(da_pool) == 0:
+        if args.mix and args.aug:
             da_pool = ['cm', 'mp', 'cm + re', 'cm + tlr', 'mp + re', 'mp + tlr', 'cm + re + tlr', 'mp + re + tlr']
+        elif args.mix:
+            da_pool = ['cm', 'mp']
+        elif args.aug:
+            da_pool = ['re', 'tlr']
+        else:
+            return x1s, lam_mix
+
         methods = random.sample(da_pool, 1)[0]
         if methods == 'cm':
             x2s, lam_mix = self.mix_data(x2s, x1s, lam_mix)
@@ -177,39 +184,31 @@ class Conv_Standard(nn.Module):
         elif methods == 'tlr':
             x1s = self.tlrot(x1s, y1s)
         elif methods == 'cm + re':
+            x1s, lam_mix = self.mix_data(x2s, x1s, lam_mix)
             x1s = self.random_erase(x1s)
-            x2s = self.random_erase(x2s)
-            x1s, lam_mix = self.mix_data(x2s, x1s, lam_mix)
         elif methods == 'cm + tlr':
-            x1s = self.tlrot(x1s, y1s)
-            x2s = self.tlrot(x2s, y2s)
             x1s, lam_mix = self.mix_data(x2s, x1s, lam_mix)
+            x1s = self.tlrot(x1s, y1s)   
         elif methods == 'mp + re':
             lam_mix = lam_mix / 2
-            x1s = self.random_erase(x1s)
-            x2s = self.random_erase(x2s)
             x1s = self.our_mix(x1s, x2s, lam_mix) 
+            x1s = self.random_erase(x1s)        
         elif methods == 'mp + tlr':
             lam_mix = lam_mix / 2
-            x1s = self.tlrot(x1s, y1s)
-            x2s = self.tlrot(x2s, y2s)
             x1s = self.our_mix(x1s, x2s, lam_mix) 
+            x1s = self.tlrot(x1s, y1s)        
         elif methods == 're + tlr':
             x1s = self.tlrot(x1s, y1s)
             x1s = self.random_erase(x1s)
         elif methods == 'cm + re + tlr':
-            x1s = self.tlrot(x1s, y1s)
-            x1s = self.random_erase(x1s)
-            x2s = self.tlrot(x2s, y2s)
-            x2s = self.random_erase(x2s)
             x1s, lam_mix = self.mix_data(x2s, x1s, lam_mix)
+            x1s = self.tlrot(x1s, y1s)
+            x1s = self.random_erase(x1s)      
         elif methods == 'mp + re + tlr': 
             lam_mix = lam_mix / 2
-            x1s = self.tlrot(x1s, y1s)
-            x1s = self.random_erase(x1s)
-            x2s = self.tlrot(x2s, y2s)
-            x2s = self.random_erase(x2s)
             x1s = self.our_mix(x1s, x2s, lam_mix)
+            x1s = self.tlrot(x1s, y1s)
+            x1s = self.random_erase(x1s)        
         return x1s, lam_mix
 
     def MLQA(self, x1s, y1s, x2s, y2s, x1q, y1q, x2q, y2q, lam_mix, task_2_shuffle_id, shuffle_list, shuffle_channel_id):

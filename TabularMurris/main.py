@@ -40,8 +40,8 @@ parser.add_argument('--train', default=1, type=int, help='True to train, False t
 parser.add_argument('--ratio', default=0.2, type=float, help='train class ratio')
 parser.add_argument('--test_set', default=1, type=int,
                     help='Set to true to test on the the test set, False for the validation set.')
-parser.add_argument('--shuffle', default=True, action='store_true', help='use channel shuffle or not')
-parser.add_argument('--mix', default=True, action='store_true', help='use mixup or not')
+parser.add_argument('--aug', default=True, action='store_true', help='use aug or not')
+parser.add_argument('--mix', default=True, action='store_true', help='use mix or not')
 parser.add_argument('--trial', default=0, type=int, help='trial')
 
 args = parser.parse_args()
@@ -49,7 +49,7 @@ print(args)
 
 assert torch.cuda.is_available()
 torch.backends.cudnn.benchmark = True
-device = torch.device('cuda:0')
+device = torch.device('cuda:1')
 random.seed(1)
 np.random.seed(2)
 
@@ -59,8 +59,8 @@ if args.num_filters != 64:
     exp_string += '.hidden' + str(args.num_filters)
 if args.mix:
     exp_string += '.mix'
-if args.shuffle:
-    exp_string += '.shuffle'
+if args.aug:
+    exp_string += '.aug'
 if args.trial > 0:
     exp_string += '.trial_{}'.format(args.trial)
 
