@@ -46,7 +46,9 @@ class MAML(nn.Module):
     def forward_MLQA(self, x1s, y1s, x1q, y1q, x2s, y2s, x2q, y2q):
 
         sel_layer = random.randint(0, 3)
-
+        sf_num = 6
+        if sel_layer == 0:
+            sf_num = 3
         shuffle_list = np.arange(self.args.num_classes)
         np.random.shuffle(shuffle_list)
 
@@ -54,7 +56,7 @@ class MAML(nn.Module):
 
         shuffle_dict = {shuffle_list[i + 1]: shuffle_list[i] for i in range(self.args.num_classes)}
 
-        shuffle_channel_id = np.random.choice(6)
+        shuffle_channel_id = np.random.choice(sf_num)
 
         create_graph = True
 

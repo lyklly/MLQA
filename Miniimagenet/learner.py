@@ -78,7 +78,8 @@ class Conv_Standard(nn.Module):
 
     def channel_shuffle(self, hidden, label, shuffle_dict, shuffle_channel_id, shuffle = True):
         concept_idx = [0, 6, 11, 16, 22, 27, 32]
-
+        if hidden.shape[-1] == 84:
+            concept_idx = [0, 1, 2, 3]
         new_data = []
 
         start = concept_idx[shuffle_channel_id]
